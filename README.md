@@ -1,17 +1,17 @@
 # A day on the rails
 
 24-hour time-lapses of one real day of rail traffic, built from official
-open timetables: eleven networks, from a cross-border map of five countries
+open timetables: twelve networks, from a cross-border map of five countries
 down to single cities. Every dot is a scheduled train. The map is dark at
 every hour, so the trains are the only bright thing on it.
 
 **Live: https://chillchamp1.github.io/github.io/**
 
 The landing map is the combined one — Germany, the Benelux, Switzerland and
-France, where trains cross borders instead of stopping at them. The eleven networks live in one
+France, where trains cross borders instead of stopping at them. The twelve networks live in one
 app at `index.html`, switched by the pills in the top-left corner or by URL
 fragment: `#eu`, `#de`, `#nl`, `#us` (plus `#us/ne`, `#us/chi`, `#us/bay`,
-`#us/nyc`), `#tokyo`, `#berlin`, `#ny`, `#fr`, `#ch`, `#london`, `#ro`. Every network carries a "Data notes & gaps"
+`#us/nyc`), `#tokyo`, `#berlin`, `#ny`, `#fr`, `#ch`, `#london`, `#ro`, `#pt`. Every network carries a "Data notes & gaps"
 section in its Figures panel — what is missing, what is weak, and why. The old per-country pages redirect there. Each dataset is
 fetched when its network is first opened, so the app needs http(s) — GitHub
 Pages, or `python3 -m http.server` locally; a bare file:// open cannot fetch.
@@ -375,6 +375,51 @@ thinnest hours and settles as the 04:00–07:00 ramp begins.
 Basemap: Natural Earth 1:10M country outline plus the județe divisions (42
 rings).
 
+## The Portugal page
+
+`#pt` is **Wednesday 26 August 2026**: **1,510 trains at 464
+stations**.
+
+| Category | Trips |
+|---|---:|
+| High-speed (Alfa Pendular) | 22 |
+| Intercity (Intercidades, InterRegional) | 107 |
+| Regional (R, Urbanos, Fertagus) | 1,381 |
+
+The 1,381 regional trains are 271 R, 954 Urbanos and 156 Fertagus. Two
+official feeds are merged here: CP – Comboios de Portugal (`publico.cp.pt`,
+Mobility Database `mdb-2057`) and Fertagus (`fertagus.pt`, `tld-715`), both
+currently published by their operators. Their windows overlap
+**2026-07-07 → 2026-12-12**; 26 August was chosen to match the shared date
+on the Switzerland, London, New York and Romania pages.
+
+CP's Alfa Pendular, Intercidades, InterRegional and Regional services are all
+`route_type 2`, so classification is name-driven; Urbanos use
+`route_type 109`. The names are folded into the established high-speed,
+intercity and regional vocabulary. CP publishes its feed openly but states no
+licence: Portugal's NAP lists it as **“Sem licença”**. It is used with
+attribution; ask CP before reuse. Fertagus's feed is CC-BY 4.0.
+
+CP publishes no route geometry, so its 1,354 trains interpolate straight
+between stops. Only Fertagus's 156 trains run on published shapes (four
+shapes). This is the Switzerland situation, but for the national operator: the
+national trains are straight lines while the private operator's trains have
+their real geometry.
+
+There are no night trains. The last regional services finish around 01:30,
+and from 03:00 through 04:30 the floor is a single train, so playback
+fast-forwards the thin hours. Romania never sleeps; Portugal does.
+
+Lisbon and Porto Urbanos are folded into regional under the national-map rule.
+Fertagus is the private Tagus suburban operator and is included because it is
+mainline rail; metros and trams are excluded as city networks. International
+services end at border stations because the feed carries no Spanish stops. CP
+sells through to Badajoz, but the timetable's last listed stop is Elvas.
+
+Azores and Madeira are absent by design: no rail serves them, following the
+US map's Alaska/Hawaii rule. Basemap: Natural Earth 1:10M mainland outline
+plus the 18 mainland district rings.
+
 ## The data
 
 `data/trains.json` is built from the **official DELFI e.V. GTFS dataset**
@@ -431,7 +476,18 @@ python3 build/build_geo_new.py ro <natural-earth-geojson-dir> -o data/ro-geo.jso
 ```
 
 The `<natural-earth-geojson-dir>` input uses the same Natural Earth files as
-`build/build_geo_new.py ch`; get them from any 1:10M GeoJSON mirror.
+the `ch` and `ro` modes of `build/build_geo_new.py`; get them from any 1:10M
+GeoJSON mirror.
+
+Portugal's Mobility Database mirrors are `mdb-2057` for CP and `tld-715` for
+Fertagus; the commands below use the current operator URLs directly.
+
+```sh
+curl -o cp.zip "https://publico.cp.pt/gtfs/gtfs.zip"
+curl -o fertagus.zip "https://www.fertagus.pt/GTFSTMLzip/Fertagus_GTFS.zip"
+python3 build/build_pt.py cp.zip fertagus.zip 20260826 -o data/pt-trains.json
+python3 build/build_geo_new.py pt <natural-earth-geojson-dir> -o data/pt-geo.json
+```
 
 `build_gtfs.py` takes one or more GTFS feeds and any service date they share,
 so a different day, a newer DELFI snapshot, or a combination of separate
@@ -616,6 +672,8 @@ datasets, credit the original publishers:
 | London boroughs | ONS and Ordnance Survey boundaries via [UK-GeoJSON](https://github.com/martinjc/UK-GeoJSON) | OS OpenData / OGL v3.0 — contains OS data © Crown copyright and database right |
 | Romania timetable | S.C. Informatică Feroviară open data (data.gov.ro), converted to GTFS by Jonah Brüchert (Mobility Database `mdb-3236`) | OGL-ROU-1.0; CC-BY-4.0 for the Ferotrafic portion |
 | Romania route geometry, basemap | OpenStreetMap contributors (route geometry, matched by the exporter); [Natural Earth](https://www.naturalearthdata.com/) (basemap) | ODbL; public domain |
+| Portugal timetable (CP) | CP – Comboios de Portugal (publico.cp.pt), via Mobility Database `mdb-2057` | no licence stated — attributed; ask CP before reuse |
+| Portugal timetable and route geometry (Fertagus) | Fertagus (fertagus.pt), via Mobility Database `tld-715` | CC-BY 4.0 |
 
 None of the datasets are redistributed in their original form: each is filtered
 to one service date, reduced to the fields the animation needs and re-encoded.
