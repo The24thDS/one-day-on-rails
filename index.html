@@ -913,15 +913,37 @@ const NETWORKS = {
       core:{lon0:-9.6, lon1:-6.7, lat0:36.8, lat1:42.3},
       maxv:{lon0:-10.8, lon1:-6.0, lat0:36.2, lat1:42.9},
       clock:{lat:39.5, lon:-10.5}} },
-    cities:[],
+    cities:[
+      ["Lisboa",38.7158,-9.1207,1,1],       ["Porto",41.1487,-8.5848,1],
+      ["Coimbra",40.2247,-8.4405,1],        ["Braga",41.5486,-8.4344,1],
+      ["Aveiro",40.6434,-8.6408,1,1],       ["Faro",37.0202,-7.9412,1,1],
+      ["Setúbal",38.5305,-8.8850,1,1],     ["Évora",38.5605,-7.9072,1],
+      ["Viana do Castelo",41.6952,-8.8314,0,1], ["Guimarães",41.4351,-8.2938,0],
+      ["Régua",41.1586,-7.7836,0],          ["Guarda",40.5515,-7.2393,0],
+      ["Santarém",39.2421,-8.6752,0],       ["Leiria",39.7566,-8.8279,0],
+      ["Beja",38.0184,-7.8585,0],            ["Tavira",37.1210,-7.6557,0,1],
+    ],
     meta: d => "<strong>" + d.trips.length + " scheduled trains</strong> over one " +
-      d.weekday + " on mainland Portugal's rail network for " + dateStr(d) + ".",
-    note: "CP and Fertagus are both included. CP's Urbanos are folded into " +
-      "regional; metro and trams are excluded.",
-    caveats: "CP publishes no route geometry, so its trains run as straight " +
-      "lines between stops. CP's feed states no licence; Fertagus's feed is " +
-      "CC-BY 4.0. Portugal has no night trains in this timetable, and " +
-      "international services end at border stations in the source feed.",
+      d.weekday + " on mainland Portugal's rail network for " + dateStr(d) +
+      " — 22 Alfa Pendular, 107 Intercidades and InterRegional, and 1,381 regional.",
+    note: "Two official feeds meet here: CP, Portugal's national operator, and " +
+      "Fertagus, the private Tagus suburban operator. They are merged on one map. " +
+      "CP's Urbanos are folded into the regional class under the national-map rule; " +
+      "the Lisbon and Porto metros and trams are city networks, not mainline rail, " +
+      "so they are excluded.",
+    caveats: "CP's national timetable is published openly but carries no licence; " +
+      "it is used with attribution. Fertagus's feed is CC-BY 4.0. CP publishes no " +
+      "route geometry, so its 1,354 trains interpolate in straight lines between " +
+      "stops; only Fertagus's 156 daily trains run on its published shapes. This is " +
+      "the published timetable, without short-term changes such as cancellations " +
+      "or engineering works. There are no night trains: the last Regionals finish " +
+      "around 01:30, the floor through 03:00–04:30 is a single train, and playback " +
+      "fast-forwards the thin hours. Urbanos are folded into regional under the " +
+      "national-map rule; the Lisbon and Porto metros and trams are city networks, " +
+      "not mainline rail, and are excluded. International trains are drawn only " +
+      "inside Portugal: the feed carries no Spanish stops, so they end at border " +
+      "stations. CP sells through to Badajoz, but the timetable's last listed stop " +
+      "is Elvas. The Azores and Madeira are absent by design: no rail serves them.",
   },
 };
 const dateStr = d => new Date(d.date+"T12:00:00Z").toLocaleDateString(
