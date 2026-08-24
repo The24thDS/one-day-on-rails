@@ -1955,6 +1955,17 @@ document.querySelectorAll(".spd button[data-mps]").forEach(b => {
   });
 });
 elScrub.addEventListener("input", () => { simSec = +elScrub.value; lastMinute = -1; });
+/* The Figures button opens the category table and the data notes; the
+   handler was lost in the merge to one app and the button did nothing. */
+{
+  const btn = document.getElementById("figbtn");
+  const fig = document.getElementById("figures");
+  btn.addEventListener("click", () => {
+    const open = fig.getAttribute("data-open") === "true";
+    fig.setAttribute("data-open", String(!open));
+    btn.setAttribute("aria-expanded", String(!open));
+  });
+}
 {
   const holder = document.getElementById("bloomctl");
   const btn = document.getElementById("bloom");
