@@ -1,17 +1,17 @@
 # A day on the rails
 
 24-hour time-lapses of one real day of rail traffic, built from official
-open timetables: ten networks, from a cross-border map of five countries
+open timetables: eleven networks, from a cross-border map of five countries
 down to single cities. Every dot is a scheduled train. The map is dark at
 every hour, so the trains are the only bright thing on it.
 
 **Live: https://chillchamp1.github.io/github.io/**
 
 The landing map is the combined one — Germany, the Benelux, Switzerland and
-France, where trains cross borders instead of stopping at them. The ten networks live in one
+France, where trains cross borders instead of stopping at them. The eleven networks live in one
 app at `index.html`, switched by the pills in the top-left corner or by URL
 fragment: `#eu`, `#de`, `#nl`, `#us` (plus `#us/ne`, `#us/chi`, `#us/bay`,
-`#us/nyc`), `#tokyo`, `#berlin`, `#ny`, `#fr`, `#ch`, `#london`. Every network carries a "Data notes & gaps"
+`#us/nyc`), `#tokyo`, `#berlin`, `#ny`, `#fr`, `#ch`, `#london`, `#ro`. Every network carries a "Data notes & gaps"
 section in its Figures panel — what is missing, what is weak, and why. The old per-country pages redirect there. Each dataset is
 fetched when its network is first opened, so the app needs http(s) — GitHub
 Pages, or `python3 -m http.server` locally; a bare file:// open cannot fetch.
@@ -332,6 +332,48 @@ Trams, Manchester Metrolink and the other British tramways in the same file
 stay out. Basemap: ONS local authority districts for the Greater London
 boroughs, plus the Thames from Natural Earth.
 
+## The Romania page
+
+`#ro` is **Wednesday 26 August 2026**: **1,756 trains at 1,643
+stations**.
+
+| Category | Trips |
+|---|---:|
+| Intercity (IC, IR) | 227 |
+| Regional (R, R-E, R-M) | 1,492 |
+| Night (IR-N) | 37 |
+
+The feed has seven mainline operators: CFR Călători, Regio Călători,
+Transferoviar Călători, Softrans, InterRegional Călători, Astra Trans
+Carpatic and Ferotrafic-TFI. Intertrans, a small private operator, is absent
+from the feed.
+
+This is an unofficial conversion. The source chain is S.C. Informatică
+Feroviară open data ([data.gov.ro](https://data.gov.ro/)) → Jonah Brüchert's
+GTFS conversion (Mobility Database `mdb-3236`) → this map. It is an annual
+reference timetable, not the publisher's own feed, so it contains no
+short-term changes. The feed window is **20251214–20261212**; 26 August 2026
+was chosen to match the shared date on the Switzerland, London and New York
+pages.
+
+The exporter OSM-matched 1,096 shapes, and 1,755 of the 1,756 trips run on
+that route geometry. The geometry is real but approximate. One trip's shape
+back-tracks around Cluj, so that trip interpolates straight between stops
+instead. International trains are drawn only inside Romania: the feed carries
+no foreign stops, so they end at border stations; unlike the Swiss map, they do
+not visibly leave the frame.
+
+Rail-replacement buses (`rt 3`, `R Auto…`) and the Bucharest Metro are
+excluded. That is the national-map rule: a national map shows mainline
+trains.
+
+The network never sleeps: the floor is 2 trains at midnight and ~50 by 03:00.
+The IR-N sleepers keep the country faintly lit all night — there is no dead
+window, only a thin shoulder, and `ffwdBelow 25` handles it.
+
+Basemap: Natural Earth 1:10M country outline plus the județe divisions (42
+rings).
+
 ## The data
 
 `data/trains.json` is built from the **official DELFI e.V. GTFS dataset**
@@ -377,6 +419,18 @@ python3 build/build_gtfs.py delfi 20260513 -o data/trains.json \
     --note "All categories cover the whole country, from the official DELFI dataset (timetable of 13 May 2026)."
 python3 build/bundle.py          # inlines the JSON back into index.html
 ```
+
+The Romania archive at Mobility Database has the stable URL used below. The
+exporter's own mirror is `https://jbb.ghsq.de/gtfs/ro-railway.gtfs.zip`.
+
+```sh
+curl -o ro-railway.gtfs.zip "https://files.mobilitydatabase.org/mdb-3236/latest.zip"
+python3 build/build_ro.py ro-railway.gtfs.zip 20260826 -o data/ro-trains.json
+python3 build/build_geo_new.py ro <natural-earth-geojson-dir> -o data/ro-geo.json
+```
+
+The `<natural-earth-geojson-dir>` input uses the same Natural Earth files as
+`build/build_geo_new.py ch`; get them from any 1:10M GeoJSON mirror.
 
 `build_gtfs.py` takes one or more GTFS feeds and any service date they share,
 so a different day, a newer DELFI snapshot, or a combination of separate
@@ -559,6 +613,8 @@ datasets, credit the original publishers:
 | US and New York basemaps | [us-atlas](https://github.com/topojson/us-atlas) (ISC) from US Census geometry | public domain |
 | Switzerland, Benelux, Thames | [Natural Earth](https://www.naturalearthdata.com/) | public domain |
 | London boroughs | ONS and Ordnance Survey boundaries via [UK-GeoJSON](https://github.com/martinjc/UK-GeoJSON) | OS OpenData / OGL v3.0 — contains OS data © Crown copyright and database right |
+| Romania timetable | S.C. Informatică Feroviară open data (data.gov.ro), converted to GTFS by Jonah Brüchert (Mobility Database `mdb-3236`) | OGL-ROU-1.0; CC-BY-4.0 for the Ferotrafic portion |
+| Romania route geometry, basemap | OpenStreetMap contributors (route geometry, matched by the exporter); [Natural Earth](https://www.naturalearthdata.com/) (basemap) | ODbL; public domain |
 
 None of the datasets are redistributed in their original form: each is filtered
 to one service date, reduced to the fields the animation needs and re-encoded.
