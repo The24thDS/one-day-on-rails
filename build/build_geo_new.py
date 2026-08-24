@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Basemaps for the New York, Switzerland, London and Romania pages.
+"""Basemaps for the New York, Switzerland, London, Romania and Portugal pages.
 
 Usage:
     python3 build/build_geo_new.py ny     <us-atlas-dir>          -o data/ny-geo.json
     python3 build/build_geo_new.py ch     <natural-earth-geojson> -o data/ch-geo.json
     python3 build/build_geo_new.py ro     <natural-earth-geojson> -o data/ro-geo.json
+    python3 build/build_geo_new.py pt     <natural-earth-geojson> -o data/pt-geo.json
     python3 build/build_geo_new.py london <uk-geojson> <ne-geojson> -o data/london-geo.json
 
-All four emit the same {"outline": rings, "states": rings} the page draws:
+All five emit the same {"outline": rings, "states": rings} the page draws:
 "outline" is the land/figure layer, "states" the fainter division lines.
 
   ny      US Census counties (us-atlas 1:10M, public domain) around the
@@ -18,6 +19,8 @@ All four emit the same {"outline": rings, "states": rings} the page draws:
           runs along the water and the map is unreadable without it.
   ro      Natural Earth 1:10M: Romania's country ring as outline and its 42
           admin-1 divisions as faint state lines; no water features.
+  pt      Natural Earth 1:10M: mainland Portugal's country ring as outline;
+          district divisions are added in a later slice.
   london  ONS local authority districts for the Greater London boroughs,
           plus the Thames from Natural Earth.
 """
@@ -201,6 +204,31 @@ def build_ro(ne):
     return {"outline": outline, "states": states}
 
 
+def build_pt(ne):
+    """Natural Earth: mainland Portugal's country ring only."""
+    countries = json.load(open(os.path.join(
+        ne, "ne_10m_admin_0_countries_lakes.geojson"), encoding="utf-8"))
+    # Portugal is a MultiPolygon: its largest ring is the mainland, while
+    # the other rings are the Azores, Madeira and small offshore islands.
+    mainland_box = (-10.0, 36.0, -6.0, 43.0)
+    candidates = []
+    for f in countries["features"]:
+        p = f["properties"]
+        if p.get("ISO_A2") != "PT" and p.get("ADM0_A3") != "PRT":
+            continue
+        candidates.extend(r for r in rings_of(f["geometry"])
+                          if inside(r, mainland_box))
+
+    outline = []
+    if candidates:
+        ring = max(candidates, key=len)
+        t = thin(ring, 0.004)
+        if len(t) >= 4:
+            outline.append(t)
+    print(f"  Portugal {len(outline)} mainland outline rings")
+    return {"outline": outline, "states": []}
+
+
 def build_london(uk, ne):
     """Greater London's boroughs, with the Thames drawn through them."""
     lad = json.load(open(os.path.join(uk, "json", "administrative", "gb",
@@ -235,13 +263,14 @@ def build_london(uk, ne):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("which", choices=["ny", "ch", "ro", "london"])
+    ap.add_argument("which", choices=["ny", "ch", "ro", "pt", "london"])
     ap.add_argument("src", nargs="+")
     ap.add_argument("-o", "--out", required=True)
     args = ap.parse_args()
     doc = ({"ny": lambda: build_ny(args.src[0]),
             "ch": lambda: build_ch(args.src[0]),
             "ro": lambda: build_ro(args.src[0]),
+            "pt": lambda: build_pt(args.src[0]),
             "london": lambda: build_london(args.src[0], args.src[1])}
            [args.which])()
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)

@@ -896,6 +896,33 @@ const NETWORKS = {
       "Metro is excluded by the national-map rule because a national map shows " +
       "mainline trains.",
   },
+  pt: {
+    label:"Portugal", pill:"PT", unit:"trains",
+    data:"data/pt-trains.json", geo:"data/pt-geo.json",
+    minorPxPerDeg:130,
+    ffwdBelow:25, ffwdBoost:5,
+    classes:{
+      ice:       {label:"High-speed — Alfa Pendular", cat:"high-speed",
+                  role:"ice",   size:0.50, secs:600, trail:6, ring:1.00},
+      intercity: {label:"Intercity — Intercidades, InterRegional", cat:"intercity",
+                  role:"ic",    size:0.42, secs:560, trail:5, ring:0.70},
+      regional:  {label:"Regional — R, Urbanos, Fertagus", cat:"regional",
+                  role:"reg",   size:0.28, secs:260, trail:2, ring:0.08},
+    },
+    views:{ pt: {label:"Portugal",
+      core:{lon0:-9.6, lon1:-6.7, lat0:36.8, lat1:42.3},
+      maxv:{lon0:-10.8, lon1:-6.0, lat0:36.2, lat1:42.9},
+      clock:{lat:39.5, lon:-10.5}} },
+    cities:[],
+    meta: d => "<strong>" + d.trips.length + " scheduled trains</strong> over one " +
+      d.weekday + " on mainland Portugal's rail network for " + dateStr(d) + ".",
+    note: "CP and Fertagus are both included. CP's Urbanos are folded into " +
+      "regional; metro and trams are excluded.",
+    caveats: "CP publishes no route geometry, so its trains run as straight " +
+      "lines between stops. CP's feed states no licence; Fertagus's feed is " +
+      "CC-BY 4.0. Portugal has no night trains in this timetable, and " +
+      "international services end at border stations in the source feed.",
+  },
 };
 const dateStr = d => new Date(d.date+"T12:00:00Z").toLocaleDateString(
   "en-GB", {day:"numeric", month:"long", year:"numeric", timeZone:"UTC"});
