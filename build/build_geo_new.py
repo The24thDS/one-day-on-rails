@@ -160,6 +160,7 @@ def build_ro(ne):
         ne, "ne_10m_admin_1_states_provinces_lakes.geojson"),
         encoding="utf-8"))
     states = []
+    seen_boundaries = set()
     for f in prov["features"]:
         p = f["properties"]
         # The admin-1 source also contains lake features. Keep only the
@@ -172,8 +173,16 @@ def build_ro(ne):
             continue
         for r in rings_of(f["geometry"]):
             t = thin(r, 0.004)
-            if len(t) >= 4:
-                states.append(t)
+            if len(t) < 4:
+                continue
+            # Ilfov contains Bucharest as a hole, while Bucharest is also a
+            # feature of its own. Do not emit that shared boundary twice.
+            key = tuple(tuple(p) for p in t)
+            key = min(key, tuple(reversed(key)))
+            if key in seen_boundaries:
+                continue
+            seen_boundaries.add(key)
+            states.append(t)
 
     countries = json.load(open(os.path.join(
         ne, "ne_10m_admin_0_countries_lakes.geojson"), encoding="utf-8"))
