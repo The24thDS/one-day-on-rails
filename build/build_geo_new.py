@@ -19,8 +19,8 @@ All five emit the same {"outline": rings, "states": rings} the page draws:
           runs along the water and the map is unreadable without it.
   ro      Natural Earth 1:10M: Romania's country ring as outline and its 42
           admin-1 divisions as faint state lines; no water features.
-  pt      Natural Earth 1:10M: mainland Portugal's country ring as outline;
-          district divisions are added in a later slice.
+  pt      Natural Earth 1:10M: mainland Portugal's country ring as outline and
+          its 18 district divisions as faint state lines.
   london  ONS local authority districts for the Greater London boroughs,
           plus the Thames from Natural Earth.
 """
@@ -205,19 +205,55 @@ def build_ro(ne):
 
 
 def build_pt(ne):
-    """Natural Earth: mainland Portugal's country ring only."""
+    """Natural Earth: mainland Portugal's country ring and 18 districts."""
+    prov = json.load(open(os.path.join(
+        ne, "ne_10m_admin_1_states_provinces_lakes.geojson"),
+        encoding="utf-8"))
+    mainland_box = (-10.0, 36.5, -6.5, 42.5)
+    states = []
+    seen_boundaries = set()
+    for f in prov["features"]:
+        p = f["properties"]
+        # The admin-1 source also contains lake features. Keep only the
+        # country divisions, never water boundaries.
+        if p.get("featurecla") == "Lake":
+            continue
+        if p.get("featurecla") != "Admin-1 scale rank":
+            continue
+        if p.get("admin") != "Portugal" and p.get("iso_a2") != "PT":
+            continue
+        # Faro and Lisboa contain small offshore components in addition to
+        # their mainland polygons. Keep one mainland ring per district;
+        # Azores and Madeira have no component in this box at all.
+        candidates = [r for r in rings_of(f["geometry"])
+                      if inside(r, mainland_box)]
+        if not candidates:
+            continue
+        r = max(candidates, key=len)
+        t = thin(r, 0.004)
+        if len(t) < 4:
+            continue
+        # Adjacent districts share boundaries in Natural Earth's source;
+        # do not emit a shared boundary twice.
+        key = tuple(tuple(p) for p in t)
+        key = min(key, tuple(reversed(key)))
+        if key in seen_boundaries:
+            continue
+        seen_boundaries.add(key)
+        states.append(t)
+
     countries = json.load(open(os.path.join(
         ne, "ne_10m_admin_0_countries_lakes.geojson"), encoding="utf-8"))
     # Portugal is a MultiPolygon: its largest ring is the mainland, while
     # the other rings are the Azores, Madeira and small offshore islands.
-    mainland_box = (-10.0, 36.0, -6.0, 43.0)
+    outline_box = (-10.0, 36.0, -6.0, 43.0)
     candidates = []
     for f in countries["features"]:
         p = f["properties"]
         if p.get("ISO_A2") != "PT" and p.get("ADM0_A3") != "PRT":
             continue
         candidates.extend(r for r in rings_of(f["geometry"])
-                          if inside(r, mainland_box))
+                          if inside(r, outline_box))
 
     outline = []
     if candidates:
@@ -225,8 +261,9 @@ def build_pt(ne):
         t = thin(ring, 0.004)
         if len(t) >= 4:
             outline.append(t)
-    print(f"  Portugal {len(outline)} mainland outline rings")
-    return {"outline": outline, "states": []}
+    print(f"  Portugal {len(outline)} mainland outline rings, "
+          f"{len(states)} district rings")
+    return {"outline": outline, "states": states}
 
 
 def build_london(uk, ne):
