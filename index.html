@@ -864,15 +864,37 @@ const NETWORKS = {
       core:{lon0:20.3, lon1:29.0, lat0:43.6, lat1:48.1},
       maxv:{lon0:20.0, lon1:29.8, lat0:43.3, lat1:48.3},
       clock:{lat:44.2, lon:29.3}} },
-    cities:[],
+    cities:[
+      ["București",44.4467,26.0738,1],    ["Cluj-Napoca",46.7852,23.6122,1],
+      ["Timișoara",45.7511,21.2072,1],     ["Iași",47.1654,27.5697,1],
+      ["Constanța",44.1687,28.6316,1,1],   ["Brașov",45.6612,25.6136,1],
+      ["Craiova",44.3288,23.8167,1],       ["Galați",45.4449,28.0610,1],
+      ["Ploiești",44.9251,26.0298,1],      ["Oradea",47.0701,21.9362,1],
+      ["Sibiu",45.8002,24.1617,0],          ["Suceava",47.6704,26.2661,0],
+      ["Arad",46.1895,21.3251,0],           ["Bacău",46.5656,26.8946,0],
+      ["Brăila",45.2814,27.9556,0],         ["Tulcea",45.1619,28.7690,0,1],
+      ["Mangalia",43.8221,28.5817,0,1],     ["Baia Mare",47.6471,23.5521,0],
+    ],
     meta: d => "<strong>" + d.trips.length + " scheduled trains</strong> over one " +
-      d.weekday + " on Romania's mainline rail network, drawn from the annual " +
+      d.weekday + " on Romania's mainline rail network, from the annual " +
       "reference timetable for " + dateStr(d) + ".",
-    note: "Every mainline railway operator is included. The Bucharest Metro is " +
-      "excluded by the national-map rule.",
-    caveats: "Provenance: data.gov.ro → Brüchert's conversion → MDB mdb-3236. " +
-      "This annual reference timetable uses OSM-matched geometry. Intertrans is " +
-      "absent from the source.",
+    note: "The feed covers seven mainline operators: CFR Călători, Regio Călători, " +
+      "Transferoviar Călători, Softrans, InterRegional Călători, Astra Trans " +
+      "Carpatic and Ferotrafic-TFI. The map shows intercity, regional and night " +
+      "trains.",
+    caveats: "The source chain is S.C. Informatică Feroviară open data from " +
+      "data.gov.ro, via Jonah Brüchert's GTFS conversion in Mobility Database " +
+      "(mdb-3236), to this map. It is not the publisher's own feed. The data is " +
+      "the annual reference timetable: the legally published skeleton, without " +
+      "short-term cancellations or engineering works. Route geometry is " +
+      "OSM-matched by the exporter, not operator-published. It is approximate but " +
+      "real, unlike Switzerland, whose trains interpolate straight between stops. " +
+      "Intertrans, a small private operator, is not in the feed. International " +
+      "trains are drawn only inside Romania. The feed carries no foreign stops, so " +
+      "they end at border stations rather than leaving the frame the way Swiss " +
+      "cross-border trains do. Rail-replacement buses are excluded. The Bucharest " +
+      "Metro is excluded by the national-map rule because a national map shows " +
+      "mainline trains.",
   },
 };
 const dateStr = d => new Date(d.date+"T12:00:00Z").toLocaleDateString(
