@@ -847,6 +847,33 @@ const NETWORKS = {
       "Neither feed publishes route geometry for these operators, so trains " +
       "run straight between stations rather than along the tunnels.",
   },
+  ro: {
+    label:"Romania", pill:"Romania", unit:"trains",
+    data:"data/ro-trains.json", geo:"data/ro-geo.json",
+    minorPxPerDeg:130,
+    ffwdBelow:25, ffwdBoost:5,
+    classes:{
+      intercity: {label:"Intercity — IC, IR", cat:"intercity",
+                  role:"ic",   size:0.42, secs:560, trail:5, ring:0.70},
+      regional:  {label:"Regional — R, R-E", cat:"regional",
+                  role:"reg",  size:0.28, secs:260, trail:2, ring:0.08},
+      night:     {label:"Night train", cat:"night",
+                  role:"night", size:0.46, secs:600, trail:6, ring:1.00},
+    },
+    views:{ ro: {label:"Romania",
+      core:{lon0:20.3, lon1:29.0, lat0:43.6, lat1:48.1},
+      maxv:{lon0:20.0, lon1:29.8, lat0:43.3, lat1:48.3},
+      clock:{lat:44.2, lon:29.3}} },
+    cities:[],
+    meta: d => "<strong>" + d.trips.length + " scheduled trains</strong> over one " +
+      d.weekday + " on Romania's mainline rail network, drawn from the annual " +
+      "reference timetable for " + dateStr(d) + ".",
+    note: "Every mainline railway operator is included. The Bucharest Metro is " +
+      "excluded by the national-map rule.",
+    caveats: "Provenance: data.gov.ro → Brüchert's conversion → MDB mdb-3236. " +
+      "This annual reference timetable uses OSM-matched geometry. Intertrans is " +
+      "absent from the source.",
+  },
 };
 const dateStr = d => new Date(d.date+"T12:00:00Z").toLocaleDateString(
   "en-GB", {day:"numeric", month:"long", year:"numeric", timeZone:"UTC"});

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Basemaps for the New York, Switzerland and London pages.
+"""Basemaps for the New York, Switzerland, London and Romania pages.
 
 Usage:
     python3 build/build_geo_new.py ny     <us-atlas-dir>          -o data/ny-geo.json
     python3 build/build_geo_new.py ch     <natural-earth-geojson> -o data/ch-geo.json
+    python3 build/build_geo_new.py ro     <natural-earth-geojson> -o data/ro-geo.json
     python3 build/build_geo_new.py london <uk-geojson> <ne-geojson> -o data/london-geo.json
 
-All three emit the same {"outline": rings, "states": rings} the page draws:
+All four emit the same {"outline": rings, "states": rings} the page draws:
 "outline" is the land/figure layer, "states" the fainter division lines.
 
   ny      US Census counties (us-atlas 1:10M, public domain) around the
@@ -15,6 +16,8 @@ All three emit the same {"outline": rings, "states": rings} the page draws:
   ch      Natural Earth 1:10M: Switzerland's cantons as divisions, the
           country ring as outline, and the big lakes, because Swiss rail
           runs along the water and the map is unreadable without it.
+  ro      Natural Earth 1:10M: Romania's country ring as outline and its 42
+          admin-1 divisions as faint state lines; no water features.
   london  ONS local authority districts for the Greater London boroughs,
           plus the Thames from Natural Earth.
 """
@@ -151,6 +154,44 @@ def build_ch(ne):
     return {"outline": outline, "states": cantons + water}
 
 
+def build_ro(ne):
+    """Natural Earth: Romania's country ring and 42 admin-1 divisions."""
+    prov = json.load(open(os.path.join(
+        ne, "ne_10m_admin_1_states_provinces_lakes.geojson"),
+        encoding="utf-8"))
+    states = []
+    for f in prov["features"]:
+        p = f["properties"]
+        # The admin-1 source also contains lake features. Keep only the
+        # country divisions, never water boundaries.
+        if p.get("featurecla") == "Lake":
+            continue
+        if p.get("featurecla") != "Admin-1 scale rank":
+            continue
+        if p.get("admin") != "Romania" and p.get("iso_a2") != "RO":
+            continue
+        for r in rings_of(f["geometry"]):
+            t = thin(r, 0.004)
+            if len(t) >= 4:
+                states.append(t)
+
+    countries = json.load(open(os.path.join(
+        ne, "ne_10m_admin_0_countries_lakes.geojson"), encoding="utf-8"))
+    outline = []
+    for f in countries["features"]:
+        p = f["properties"]
+        if (p.get("ISO_A2") or p.get("iso_a2")) not in ("RO", "ROU") \
+                and p.get("ADM0_A3") != "ROU":
+            continue
+        for r in rings_of(f["geometry"]):
+            t = thin(r, 0.004)
+            if len(t) >= 4:
+                outline.append(t)
+    print(f"  Romania {len(outline)} outline rings, "
+          f"{len(states)} division rings")
+    return {"outline": outline, "states": states}
+
+
 def build_london(uk, ne):
     """Greater London's boroughs, with the Thames drawn through them."""
     lad = json.load(open(os.path.join(uk, "json", "administrative", "gb",
@@ -185,12 +226,13 @@ def build_london(uk, ne):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("which", choices=["ny", "ch", "london"])
+    ap.add_argument("which", choices=["ny", "ch", "ro", "london"])
     ap.add_argument("src", nargs="+")
     ap.add_argument("-o", "--out", required=True)
     args = ap.parse_args()
     doc = ({"ny": lambda: build_ny(args.src[0]),
             "ch": lambda: build_ch(args.src[0]),
+            "ro": lambda: build_ro(args.src[0]),
             "london": lambda: build_london(args.src[0], args.src[1])}
            [args.which])()
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
