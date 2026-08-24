@@ -356,10 +356,10 @@ short-term changes. The feed window is **20251214–20261212**; 26 August 2026
 was chosen to match the shared date on the Switzerland, London and New York
 pages.
 
-The exporter OSM-matched 1,096 shapes, and 1,755 of the 1,756 trips run on
-that route geometry. The geometry is real but approximate. One trip's shape
-back-tracks around Cluj, so that trip interpolates straight between stops
-instead. International trains are drawn only inside Romania: the feed carries
+The exporter matched 1,096 shapes to OpenStreetMap, and 1,755 of the 1,756
+trips run on that route geometry. The geometry is real but approximate. One
+trip's shape back-tracks around Cluj, so that trip interpolates straight
+between stops instead. International trains are drawn only inside Romania: the feed carries
 no foreign stops, so they end at border stations; unlike the Swiss map, they do
 not visibly leave the frame.
 
@@ -369,7 +369,8 @@ trains.
 
 The network never sleeps: the floor is 2 trains at midnight and ~50 by 03:00.
 The IR-N sleepers keep the country faintly lit all night — there is no dead
-window, only a thin shoulder, and `ffwdBelow 25` handles it.
+window, only a thin shoulder, so the player fast-forwards through the
+thinnest hours and settles as the 04:00–07:00 ramp begins.
 
 Basemap: Natural Earth 1:10M country outline plus the județe divisions (42
 rings).
