@@ -24,8 +24,8 @@ plays in real time throughout. City labels are placed by a collision pass at
 layout time: each tries four vertical slots on either side of its dot, nothing
 may cover the clock, the on-canvas key or another label, and a label that finds
 no free slot is simply not drawn — two names printed over each other are worse
-than one missing. Every push to `main` republishes the site
-via `.github/workflows/pages.yml`.
+than one missing. Every push to `main` republishes the site —
+GitHub Pages serves the repository as it stands.
 
 ## What is on screen
 
